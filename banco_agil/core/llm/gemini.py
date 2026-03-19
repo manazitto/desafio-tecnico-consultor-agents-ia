@@ -9,7 +9,7 @@ from banco_agil.core.llm.base import LLMProvider
 class GeminiProvider(LLMProvider):
     """Provider para Google Gemini via langchain-google-genai."""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-3-flash-preview"):
         self._api_key = api_key
         self._model = model
         self._llm = ChatGoogleGenerativeAI(model=model, google_api_key=api_key)

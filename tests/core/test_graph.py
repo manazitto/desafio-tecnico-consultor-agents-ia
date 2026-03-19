@@ -64,6 +64,6 @@ class TestCreateRunnable:
             mock_chat.return_value = MagicMock()
             runnable = create_runnable(
                 api_key="fake-key",
-                model="gemini-2.5-flash",
+                model="gemini-3-flash-preview",
             )
         assert runnable is not None

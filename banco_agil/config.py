@@ -11,7 +11,7 @@ load_dotenv(BASE_DIR / ".env")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")
-LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.5-flash")
+LLM_MODEL = os.getenv("LLM_MODEL", "gemini-3-flash-preview")
 
 CLIENTES_CSV = str(DATA_DIR / "clientes.csv")
 SCORE_LIMITE_CSV = str(DATA_DIR / "score_limite.csv")

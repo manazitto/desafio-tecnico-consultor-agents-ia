@@ -12,16 +12,16 @@ class TestGeminiProvider:
     """LLM-02: Implementacao concreta GeminiProvider."""
 
     def test_gemini_is_llm_provider(self):
-        provider = GeminiProvider(api_key="fake-key", model="gemini-2.5-flash")
+        provider = GeminiProvider(api_key="fake-key", model="gemini-3-flash-preview")
         assert isinstance(provider, LLMProvider)
 
     def test_gemini_stores_config(self):
-        provider = GeminiProvider(api_key="fake-key", model="gemini-2.5-flash")
-        assert provider._model == "gemini-2.5-flash"
+        provider = GeminiProvider(api_key="fake-key", model="gemini-3-flash-preview")
+        assert provider._model == "gemini-3-flash-preview"
 
     def test_gemini_builds_tool_declarations(self):
         """Provider deve converter tool schemas para o formato Gemini."""
-        provider = GeminiProvider(api_key="fake-key", model="gemini-2.5-flash")
+        provider = GeminiProvider(api_key="fake-key", model="gemini-3-flash-preview")
         tools = [
             {
                 "name": "test_tool",
