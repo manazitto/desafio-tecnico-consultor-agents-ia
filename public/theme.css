@@ -1,0 +1,98 @@
+/* Banco Agil - Tema inspirado Agibank */
+/* Paleta: Azul Escuro #000F44, Azul #0033B0, Verde Limao #77DF40, Amarelo #FFD600 */
+
+:root {
+  --agi-blue: #0033B0;
+  --agi-dark: #000F44;
+  --agi-green: #77DF40;
+  --agi-yellow: #FFD600;
+  --agi-green-hover: #65C832;
+}
+
+/* Header */
+header {
+  background-color: var(--agi-dark) !important;
+  border-bottom: 3px solid var(--agi-green) !important;
+}
+
+header p, header span, header a, header button {
+  color: #FFFFFF !important;
+}
+
+/* Botao de envio */
+button[data-testid="send-button"],
+.cl-send-button {
+  background-color: var(--agi-green) !important;
+  color: var(--agi-dark) !important;
+}
+
+button[data-testid="send-button"]:hover,
+.cl-send-button:hover {
+  background-color: var(--agi-green-hover) !important;
+}
+
+/* Botoes primarios */
+button.MuiButton-containedPrimary,
+.MuiButton-root.MuiButton-contained {
+  background-color: var(--agi-blue) !important;
+  color: #FFFFFF !important;
+}
+
+button.MuiButton-containedPrimary:hover,
+.MuiButton-root.MuiButton-contained:hover {
+  background-color: var(--agi-dark) !important;
+}
+
+/* Links */
+a {
+  color: var(--agi-blue) !important;
+}
+
+/* Mensagem do assistente - borda lateral verde */
+.cl-message-assistant,
+[data-testid="assistant-message"] {
+  border-left: 3px solid var(--agi-green);
+  padding-left: 12px;
+}
+
+/* Composer focus - borda verde */
+.cl-composer:focus-within,
+[data-testid="composer"] textarea:focus {
+  border-color: var(--agi-blue) !important;
+  box-shadow: 0 0 0 1px var(--agi-blue) !important;
+}
+
+/* New chat button */
+button[data-testid="new-chat-button"] {
+  color: var(--agi-green) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--agi-blue);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--agi-green);
+}
+
+/* Welcome screen / landing */
+.cl-welcome-screen h1,
+.cl-welcome-screen h2 {
+  color: var(--agi-dark) !important;
+}
+
+/* Chip / tag style */
+.MuiChip-root {
+  background-color: var(--agi-blue) !important;
+  color: #FFFFFF !important;
+}

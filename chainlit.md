@@ -1,9 +1,9 @@
-# Banco Agil
+# Bem-vindo ao Banco Agil!
 
-Bem-vindo ao atendimento virtual do Banco Agil!
+Seu atendente virtual esta pronto para ajuda-lo. Comece informando seu **CPF** e **data de nascimento** para autenticacao.
 
-Servicos disponiveis:
-- Consulta de limite de credito
-- Solicitacao de aumento de limite
-- Entrevista de credito para recalculo de score
-- Consulta de cotacao de moedas
+### Servicos disponiveis
+
+- **Credito** - Consulta e aumento de limite
+- **Entrevista de Credito** - Recalculo do seu score
+- **Cambio** - Cotacao de moedas em tempo real

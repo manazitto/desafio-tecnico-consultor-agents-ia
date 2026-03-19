@@ -48,7 +48,7 @@ async def on_message(message: cl.Message):
 
     try:
         state["messages"].append(HumanMessage(content=message.content))
-        result = graph.invoke(state)
+        result = await graph.ainvoke(state)
 
         # Atualizar state da sessao
         cl.user_session.set("state", result)
