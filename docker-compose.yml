@@ -1,0 +1,9 @@
+services:
+  banco-agil:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - banco_agil/.env
+    volumes:
+      - ./banco_agil/data:/app/banco_agil/data
