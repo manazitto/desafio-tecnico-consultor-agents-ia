@@ -1,11 +1,39 @@
+# Python
 __pycache__/
 *.pyc
 *.pyo
-.env
-.venv/
 *.egg-info/
 dist/
 build/
+
+# Env
+.env
+.venv/
+venv/
+
+# Testing
 .pytest_cache/
-.chainlit/translations/
+.coverage
+htmlcov/
+
+# IDE
+.cursor/
+.vscode/
+.idea/
+
+# Linter
+.ruff_cache/
+
+# Chainlit
+.chainlit/
+chainlit.md
+
+# Specs (dev interno)
+.specs/
+
+# Evals reports
 evals/reports/
+
+# OS
+.DS_Store
+Thumbs.db

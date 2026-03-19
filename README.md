@@ -1,4 +1,21 @@
-# Banco Ágil — Sistema Multi-Agente de Atendimento Bancário
+<div align="center">
+
+# 🏦 Banco Ágil
+
+**Sistema Multi-Agente de Atendimento Bancário Virtual**
+
+[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![LangGraph](https://img.shields.io/badge/LangGraph-StateGraph-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)](https://langchain-ai.github.io/langgraph/)
+[![Gemini](https://img.shields.io/badge/Google-Gemini_3_Flash-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
+[![Chainlit](https://img.shields.io/badge/Chainlit-UI-F7931E?style=for-the-badge&logo=chainlit&logoColor=white)](https://chainlit.io)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://docker.com)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+
+---
+
+*Agentes especializados orquestrados por LangGraph com handoffs transparentes — o cliente percebe um único atendente.*
+
+</div>
 
 ## Visão Geral
 
@@ -10,10 +27,10 @@ O sistema foi construído com **LangGraph** (orquestração de agentes como graf
 
 | Agente | Responsabilidade |
 |--------|-----------------|
-| **Triagem** | Autenticação por CPF + data de nascimento e roteamento para o agente adequado |
-| **Crédito** | Consulta de limite e solicitação de aumento (aprovação/rejeição por faixa de score) |
-| **Entrevista de Crédito** | Recálculo de score via entrevista financeira com 5 perguntas ponderadas |
-| **Câmbio** | Cotação de moedas em tempo real via API externa (AwesomeAPI) |
+| 🔐 **Triagem** | Autenticação por CPF + data de nascimento e roteamento para o agente adequado |
+| 💳 **Crédito** | Consulta de limite e solicitação de aumento (aprovação/rejeição por faixa de score) |
+| 🗣️ **Entrevista de Crédito** | Recálculo de score via entrevista financeira com 5 perguntas ponderadas |
+| 💱 **Câmbio** | Cotação de moedas em tempo real via API externa (AwesomeAPI) |
 
 ---
 
@@ -23,37 +40,85 @@ O sistema foi construído com **LangGraph** (orquestração de agentes como graf
 
 Cada agente é um **node** no grafo. O roteamento entre eles é feito por **edges condicionais** baseadas na decisão do LLM (via tool calling), não por keywords fixas.
 
+```mermaid
+graph TD
+    START((▶ START)) --> GUARD[🛡️ Guardrail Node]
+
+    GUARD -->|injection detectado| REFUSE[⛔ Recusa]
+    REFUSE --> END_NODE((⏹ END))
+
+    GUARD -->|input limpo| TRIAGE[🔐 Triagem]
+
+    TRIAGE -->|route_to_agent| CREDIT[💳 Crédito]
+    TRIAGE -->|route_to_agent| EXCHANGE[💱 Câmbio]
+    TRIAGE -->|route_to_agent| INTERVIEW[🗣️ Entrevista]
+
+    CREDIT -->|route_to_agent| TRIAGE
+    CREDIT -->|route_to_agent| INTERVIEW
+    EXCHANGE -->|route_to_agent| TRIAGE
+    INTERVIEW -->|route_to_agent| CREDIT
+
+    CREDIT --> TOOLS[🔧 ToolNode]
+    EXCHANGE --> TOOLS
+    INTERVIEW --> TOOLS
+    TRIAGE --> TOOLS
+
+    TOOLS --> TRIAGE
+    TOOLS --> CREDIT
+    TOOLS --> EXCHANGE
+    TOOLS --> INTERVIEW
+    TOOLS --> END_NODE
+
+    style START fill:#10b981,stroke:#059669,color:#fff
+    style END_NODE fill:#ef4444,stroke:#dc2626,color:#fff
+    style GUARD fill:#f59e0b,stroke:#d97706,color:#fff
+    style REFUSE fill:#ef4444,stroke:#dc2626,color:#fff
+    style TRIAGE fill:#6366f1,stroke:#4f46e5,color:#fff
+    style CREDIT fill:#3b82f6,stroke:#2563eb,color:#fff
+    style EXCHANGE fill:#8b5cf6,stroke:#7c3aed,color:#fff
+    style INTERVIEW fill:#ec4899,stroke:#db2777,color:#fff
+    style TOOLS fill:#64748b,stroke:#475569,color:#fff
 ```
-                    ┌──────────────┐
-                    │    START     │
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │  Guardrail   │── injection detectado? ──→ RECUSA → END
-                    └──────┬───────┘
-                           │ input limpo
-                    ┌──────▼───────┐
-              ┌────→│   Triagem    │←────┐
-              │     └──────┬───────┘     │
-              │            │             │
-         route_to_agent    │        route_to_agent
-              │     ┌──────▼───────┐     │
-              ├────→│   Crédito    │─────┤
-              │     └──────────────┘     │
-              │     ┌──────────────┐     │
-              ├────→│   Câmbio     │─────┤
-              │     └──────────────┘     │
-              │     ┌──────────────┐     │
-              └────→│  Entrevista  │─────┘
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │   ToolNode   │ (executa tools: auth, crédito, score, câmbio)
-                    └──────┬───────┘
-                           │
-                    ┌──────▼───────┐
-                    │     END      │
-                    └──────────────┘
+
+### Fluxo de Conversa
+
+```mermaid
+sequenceDiagram
+    participant C as 👤 Cliente
+    participant G as 🛡️ Guardrail
+    participant T as 🔐 Triagem
+    participant CR as 💳 Crédito
+    participant EI as 🗣️ Entrevista
+    participant TN as 🔧 ToolNode
+
+    C->>G: "Meu CPF é 123.456.789-00"
+    G->>G: Checa injection (regex)
+    G->>T: Input limpo ✅
+
+    T->>TN: authenticate_client(cpf, data_nasc)
+    TN-->>T: ✅ Cliente: Maria Silva, Score: 720
+
+    C->>T: "Quero aumentar meu limite pra 12 mil"
+    T->>CR: route_to_agent("credit")
+
+    Note over CR: Handoff transparente — cliente não percebe
+
+    CR->>TN: request_credit_increase(12000)
+    TN-->>CR: ❌ Score insuficiente
+
+    CR->>C: "Seu score não permite. Deseja fazer uma entrevista?"
+    C->>CR: "Sim, quero tentar"
+    CR->>EI: route_to_agent("credit_interview")
+
+    EI->>C: Renda? Emprego? Despesas? Dependentes? Dívidas?
+    C->>EI: Respostas...
+    EI->>TN: calculate_new_score(...)
+    TN-->>EI: ✅ Novo score: 820
+
+    EI->>CR: route_to_agent("credit")
+    CR->>TN: request_credit_increase(12000)
+    TN-->>CR: ✅ Aprovado!
+    CR->>C: "Limite aprovado! 🎉"
 ```
 
 ### Estado Compartilhado (`AgentState`)
@@ -69,35 +134,60 @@ O grafo mantém um estado tipado que flui entre todos os nodes:
 
 Após a autenticação, `client_data` é injetado nos prompts de todos os agentes via `build_system_prompt()`. O LLM sabe com quem está falando e usa esses dados nas tool calls sem pedir novamente.
 
-### Fluxo de Dados (CSV)
+### Fluxo de Dados
 
-| Arquivo | Leitura | Escrita |
-|---------|---------|---------|
-| `clientes.csv` | Autenticação (CPF + data nascimento), consulta de score | Atualização de score após entrevista |
-| `score_limite.csv` | Faixas de score → limite máximo permitido | — |
-| `solicitacoes_aumento_limite.csv` | — | Registro de cada solicitação de aumento |
+```mermaid
+graph LR
+    subgraph Entrada
+        A[👤 Cliente] -->|CPF + Data Nasc.| B[AuthService]
+    end
 
-Todas as operações em CSV são centralizadas no módulo `tools/csv_ops.py` (`read_csv`, `append_csv_row`, `update_csv_row`).
+    subgraph CSVs
+        C[(clientes.csv)]
+        D[(score_limite.csv)]
+        E[(solicitacoes.csv)]
+    end
+
+    subgraph Serviços
+        B -->|lê / atualiza| C
+        F[CreditService] -->|lê faixas| D
+        F -->|grava pedido| E
+        G[ScoreService] -->|atualiza score| C
+    end
+
+    subgraph Tools Bridge
+        H[authenticate_client] --> B
+        I[query_credit_limit] --> F
+        J[request_credit_increase] --> F
+        K[calculate_new_score] --> G
+        L[fetch_exchange_rate] --> M[AwesomeAPI]
+    end
+
+    style C fill:#fbbf24,stroke:#d97706,color:#000
+    style D fill:#fbbf24,stroke:#d97706,color:#000
+    style E fill:#fbbf24,stroke:#d97706,color:#000
+    style M fill:#60a5fa,stroke:#2563eb,color:#fff
+```
 
 ---
 
 ## Funcionalidades Implementadas
 
-### Autenticação com Lock
+### 🔐 Autenticação com Lock
 
 - Coleta de CPF e data de nascimento via conversa natural
 - Normalização automática de formatos (o LLM extrai e padroniza)
 - Validação contra a base `clientes.csv`
 - Bloqueio após 3 tentativas consecutivas com falha
 
-### Consulta e Aumento de Limite de Crédito
+### 💳 Consulta e Aumento de Limite de Crédito
 
 - Consulta do limite atual com base nos dados do cliente autenticado
 - Solicitação de aumento com validação automática contra faixas de score (`score_limite.csv`)
 - Registro de cada solicitação em `solicitacoes_aumento_limite.csv` com timestamp ISO 8601 e status (`pendente` → `aprovado` ou `rejeitado`)
 - Em caso de rejeição, oferta de redirecionamento para a entrevista de crédito
 
-### Entrevista de Crédito (Recálculo de Score)
+### 🗣️ Entrevista de Crédito (Recálculo de Score)
 
 Entrevista conversacional com 5 perguntas:
 
@@ -107,7 +197,7 @@ Entrevista conversacional com 5 perguntas:
 4. Número de dependentes
 5. Existência de dívidas ativas
 
-Fórmula de score (0 a 1000):
+**Fórmula de score** (0 a 1000):
 
 ```
 score = (renda / (despesas + 1)) × 30
@@ -118,18 +208,18 @@ score = (renda / (despesas + 1)) × 30
 
 O score calculado é atualizado diretamente no `clientes.csv`, e o cliente é redirecionado de volta ao Agente de Crédito para nova análise.
 
-### Cotação de Câmbio
+### 💱 Cotação de Câmbio
 
 - Consulta em tempo real via AwesomeAPI (`economia.awesomeapi.com.br`)
 - Suporte a múltiplas moedas: USD, EUR, GBP, entre outras
 - Apresentação da cotação com valor de compra e venda
 
-### Guardrails de Segurança
+### 🛡️ Guardrails de Segurança
 
 - **Camada determinística (regex):** Detecção de prompt injection na entrada do grafo, antes de qualquer chamada ao LLM. Custo zero de tokens, latência zero.
 - **Camada semântica (LLM):** Guardrails de escopo nos prompts de cada agente, garantindo que nenhum agente atue fora da sua responsabilidade.
 
-### Handoffs Transparentes
+### 🔄 Handoffs Transparentes
 
 Todos os redirecionamentos entre agentes são invisíveis para o cliente. O LLM é instruído via prompt a nunca mencionar "transferência" ou "outro departamento". A tool `route_to_agent` altera o `current_agent` no estado do grafo, e o próximo agente continua a conversa com contexto completo.
 
@@ -137,29 +227,41 @@ Todos os redirecionamentos entre agentes são invisíveis para o cliente. O LLM 
 
 ## Desafios Enfrentados e Soluções
 
-### 1. Gemini rejeita declarações duplicadas de tool
+<details>
+<summary><strong>1. Gemini rejeita declarações duplicadas de tool</strong></summary>
 
 **Problema:** Agentes compartilham tools comuns (`route_to_agent`, `end_conversation`). Ao combinar as tools de múltiplos agentes no grafo, o Gemini retornava erro 400 por declarações duplicadas de função.
 
 **Solução:** Deduplicação por nome de tool antes do `bind_tools()`. A função `build_agent_graph()` garante que cada tool apareça uma única vez, independente de quantos agentes a declaram.
 
-### 2. Gemini 3 Flash retorna content como lista
+</details>
+
+<details>
+<summary><strong>2. Gemini 3 Flash retorna content como lista</strong></summary>
 
 **Problema:** O `gemini-3-flash-preview` retorna `response.content` como `list` (multi-part) em vez de `str` em cenários específicos, quebrando o parsing downstream.
 
 **Solução:** Criação de normalizadores `_extract_text()` e `_to_str()` que lidam com ambos os formatos de forma transparente.
 
-### 3. Accuracy baixa em tool calling com system prompts
+</details>
+
+<details>
+<summary><strong>3. Accuracy baixa em tool calling com system prompts</strong></summary>
 
 **Problema:** O Gemini priorizava as *descrições das tools* sobre os system prompts na decisão de quando e qual tool chamar. O agente frequentemente "conversava" ao invés de chamar a tool imediata.
 
 **Solução:** Adição de diretivas explícitas nas descrições das tools (ex: "REGRA PRINCIPAL — TOOL CALLING IMEDIATO") e reestruturação dos prompts para reforçar o comportamento esperado. O resultado foi validado nas evals com 100% de accuracy.
 
-### 4. Duas abstrações de LLM concorrentes
+</details>
+
+<details>
+<summary><strong>4. Duas abstrações de LLM concorrentes</strong></summary>
 
 **Problema:** O projeto inicialmente usava o SDK `google-genai` diretamente e `langchain-google-genai` em paralelo, gerando inconsistências no formato de mensagens e tool calls.
 
 **Solução:** Unificação de toda a comunicação LLM via `langchain-google-genai`, eliminando a dependência direta do SDK e padronizando o pipeline.
+
+</details>
 
 ---
 
@@ -245,14 +347,14 @@ tests/                          # Testes unitários e de integração
 
 | Camada | Tecnologia |
 |--------|-----------|
-| Orquestração | LangGraph StateGraph |
-| LLM | Google Gemini (`gemini-3-flash-preview`) via `langchain-google-genai` |
-| Tools | LangChain `@tool` decorator + `ToolNode` |
-| UI | Chainlit |
-| Dados | CSV (`clientes`, `score_limite`, `solicitações`) |
-| Testes | pytest |
-| Evals | Suite própria com SingleTurnRunner (routing, tool calling, guardrails) |
-| Container | Docker + docker-compose |
+| 🧩 Orquestração | LangGraph StateGraph |
+| 🧠 LLM | Google Gemini (`gemini-3-flash-preview`) via `langchain-google-genai` |
+| 🔧 Tools | LangChain `@tool` decorator + `ToolNode` |
+| 💬 UI | Chainlit |
+| 📊 Dados | CSV (`clientes`, `score_limite`, `solicitações`) |
+| 🧪 Testes | pytest |
+| 📈 Evals | Suite própria + LangSmith `evaluate()` |
+| 🐳 Container | Docker + docker-compose |
 
 ---
 
@@ -318,6 +420,8 @@ python -m evals.run --suite all --save
 
 ---
 
-## Licença
+<div align="center">
 
-MIT
+**Feito com ☕ e LangGraph**
+
+</div>
