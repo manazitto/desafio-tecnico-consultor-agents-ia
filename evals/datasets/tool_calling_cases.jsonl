@@ -1,0 +1,8 @@
+{"input": "Meu CPF eh 123.456.789-00 e nasci em 15 de maio de 1990", "expected_tool": "authenticate_client", "expected_params": {"cpf": "12345678900", "data_nascimento": "15/05/1990"}, "agent": "triage"}
+{"input": "CPF 98765432100, nascimento 20/11/1985", "expected_tool": "authenticate_client", "expected_params": {"cpf": "98765432100", "data_nascimento": "20/11/1985"}, "agent": "triage"}
+{"input": "meu cpf é 104.965.823-05 e minha data de nascimento é primeiro de fevereiro de 1947", "expected_tool": "authenticate_client", "expected_params": {"cpf": "10496582305", "data_nascimento": "01/02/1947"}, "agent": "triage"}
+{"input": "cpf 940.538.716-20 nascido em 1984-03-05", "expected_tool": "authenticate_client", "expected_params": {"cpf": "94053871620", "data_nascimento": "05/03/1984"}, "agent": "triage"}
+{"input": "quero saber a cotacao do dolar", "expected_tool": "fetch_exchange_rate", "expected_params": {"from_currency": "USD"}, "agent": "exchange"}
+{"input": "quanto esta o euro hoje?", "expected_tool": "fetch_exchange_rate", "expected_params": {"from_currency": "EUR"}, "agent": "exchange"}
+{"input": "quero ver meu limite", "expected_tool": "query_credit_limit", "expected_params": {}, "agent": "credit"}
+{"input": "quero aumentar meu limite para 25000 reais", "expected_tool": "request_credit_increase", "expected_params": {"novo_limite": 25000}, "agent": "credit"}

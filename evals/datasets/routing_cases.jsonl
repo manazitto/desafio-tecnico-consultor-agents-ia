@@ -1,0 +1,15 @@
+{"input": "quero ver meu limite de credito", "expected_agent": "credit"}
+{"input": "qual meu limite?", "expected_agent": "credit"}
+{"input": "quero aumentar meu limite", "expected_agent": "credit"}
+{"input": "gostaria de solicitar aumento de limite de credito", "expected_agent": "credit"}
+{"input": "qual a cotacao do dolar hoje?", "expected_agent": "exchange"}
+{"input": "quanto ta o euro?", "expected_agent": "exchange"}
+{"input": "quero saber o cambio do dolar", "expected_agent": "exchange"}
+{"input": "cotacao da libra esterlina", "expected_agent": "exchange"}
+{"input": "quero fazer entrevista de credito", "expected_agent": "credit_interview"}
+{"input": "posso recalcular meu score?", "expected_agent": "credit_interview"}
+{"input": "quero atualizar meu score de credito", "expected_agent": "credit_interview"}
+{"input": "quero consultar meu credito disponivel", "expected_agent": "credit"}
+{"input": "preciso de mais limite no cartao", "expected_agent": "credit"}
+{"input": "moeda estrangeira cotacao", "expected_agent": "exchange"}
+{"input": "dolar americano valor", "expected_agent": "exchange"}
