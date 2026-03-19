@@ -1,117 +1,84 @@
-"""Gemini LLM Provider com tracing LangSmith."""
-from google import genai
-from google.genai import types
+"""Gemini LLM Provider usando langchain-google-genai."""
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.tools import tool as lc_tool
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from banco_agil.core.llm.base import LLMProvider
 
-try:
-    from langsmith import traceable
-    from langsmith.run_helpers import get_current_run_tree
-    _HAS_LANGSMITH = True
-except ImportError:
-    _HAS_LANGSMITH = False
-
-    def traceable(*args, **kwargs):
-        """Fallback no-op decorator quando LangSmith nao esta instalado."""
-        def decorator(func):
-            return func
-        if args and callable(args[0]):
-            return args[0]
-        return decorator
-
 
 class GeminiProvider(LLMProvider):
-    """Provider para Google Gemini API com tracing opcional via LangSmith."""
+    """Provider para Google Gemini via langchain-google-genai."""
 
-    def __init__(self, api_key: str, model: str = "gemini-2.0-flash"):
+    def __init__(self, api_key: str, model: str = "gemini-2.5-flash"):
         self._api_key = api_key
         self._model = model
-        self._client = genai.Client(api_key=api_key)
+        self._llm = ChatGoogleGenerativeAI(model=model, google_api_key=api_key)
 
-    @traceable(run_type="llm", name="gemini_chat")
     def chat(self, messages: list[dict]) -> str:
         """Envia mensagens e retorna resposta de texto."""
-        contents = self._build_contents(messages)
-        system_instruction = self.get_system_instruction(messages)
+        lc_messages = self._to_langchain_messages(messages)
+        response = self._llm.invoke(lc_messages)
+        return response.content
 
-        config = types.GenerateContentConfig(
-            system_instruction=system_instruction,
-        ) if system_instruction else None
-
-        response = self._client.models.generate_content(
-            model=self._model,
-            contents=contents,
-            config=config,
-        )
-        return response.text
-
-    @traceable(run_type="llm", name="gemini_chat_with_tools")
     def chat_with_tools(self, messages: list[dict], tools: list[dict]) -> dict:
         """Envia mensagens com tools e retorna resposta (texto ou tool call)."""
-        contents = self._build_contents(messages)
-        declarations = self.build_tool_declarations(tools)
-        system_instruction = self.get_system_instruction(messages)
+        lc_tools = self._schemas_to_lc_tools(tools)
+        llm_with_tools = self._llm.bind_tools(lc_tools)
 
-        gemini_tools = [types.Tool(function_declarations=declarations)]
+        lc_messages = self._to_langchain_messages(messages)
+        response = llm_with_tools.invoke(lc_messages)
 
-        response = self._client.models.generate_content(
-            model=self._model,
-            contents=contents,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                tools=gemini_tools,
-                tool_config=types.ToolConfig(
-                    function_calling_config=types.FunctionCallingConfig(mode="AUTO")
-                ),
-            ),
-        )
-
-        candidate = response.candidates[0]
-        part = candidate.content.parts[0]
-
-        if part.function_call:
+        if response.tool_calls:
+            tc = response.tool_calls[0]
             return {
                 "type": "tool_call",
-                "tool_name": part.function_call.name,
-                "arguments": dict(part.function_call.args) if part.function_call.args else {},
+                "tool_name": tc["name"],
+                "arguments": tc["args"],
             }
 
         return {
             "type": "text",
-            "content": part.text,
+            "content": response.content,
         }
 
     def build_tool_declarations(self, tools: list[dict]) -> list[dict]:
-        """Converte tool schemas para formato Gemini function declarations."""
-        declarations = []
-        for tool in tools:
-            decl = {
-                "name": tool["name"],
-                "description": tool["description"],
-                "parameters": tool["parameters"],
-            }
-            declarations.append(decl)
-        return declarations
+        """Converte tool schemas para formato de declarations (backward compat)."""
+        return [
+            {"name": t["name"], "description": t["description"], "parameters": t["parameters"]}
+            for t in tools
+        ]
 
-    def _build_contents(self, messages: list[dict]) -> list:
-        """Converte mensagens no formato padrao para formato Gemini."""
-        contents = []
+    def _to_langchain_messages(self, messages: list[dict]) -> list:
+        """Converte mensagens dict para objetos LangChain."""
+        lc_messages = []
         for msg in messages:
             role = msg["role"]
+            content = msg["content"]
             if role == "system":
-                continue
-            gemini_role = "user" if role == "user" else "model"
-            contents.append(
-                types.Content(
-                    role=gemini_role,
-                    parts=[types.Part.from_text(text=msg["content"])],
-                )
-            )
-        return contents
+                lc_messages.append(SystemMessage(content=content))
+            elif role == "user":
+                lc_messages.append(HumanMessage(content=content))
+            else:
+                lc_messages.append(AIMessage(content=content))
+        return lc_messages
 
-    def get_system_instruction(self, messages: list[dict]) -> str | None:
-        """Extrai system instruction das mensagens."""
-        for msg in messages:
-            if msg["role"] == "system":
-                return msg["content"]
-        return None
+    @staticmethod
+    def _schemas_to_lc_tools(tools: list[dict]) -> list:
+        """Converte tool schemas JSON para tool objects compatíveis com bind_tools."""
+        lc_tools = []
+        for t in tools:
+            props = t.get("parameters", {}).get("properties", {})
+            required = t.get("parameters", {}).get("required", [])
+
+            # Monta JSON schema completo para bind_tools
+            schema = {
+                "title": t["name"],
+                "description": t["description"],
+                "type": "object",
+                "properties": props,
+            }
+            if required:
+                schema["required"] = required
+
+            lc_tools.append(schema)
+        return lc_tools

@@ -170,7 +170,7 @@ def build_agent_graph(llm, agents: dict):
     return graph.compile()
 
 
-def create_runnable(api_key: str, model: str = "gemini-2.0-flash"):
+def create_runnable(api_key: str, model: str = "gemini-2.5-flash"):
     """Factory: cria LLM, servicos, tools e retorna grafo compilado."""
     llm = ChatGoogleGenerativeAI(model=model, google_api_key=api_key)
 

@@ -27,5 +27,5 @@ class TestLLMFactory:
 
     def test_factory_creates_provider_from_config(self):
         """Factory deve criar o provider correto baseado em string de config."""
-        provider = create_llm_provider(provider_name="gemini", api_key="fake-key", model="gemini-2.0-flash")
+        provider = create_llm_provider(provider_name="gemini", api_key="fake-key", model="gemini-2.5-flash")
         assert isinstance(provider, LLMProvider)
