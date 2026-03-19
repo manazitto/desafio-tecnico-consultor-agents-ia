@@ -422,6 +422,6 @@ python -m evals.run --suite all --save
 
 <div align="center">
 
-**Feito com ☕ e LangGraph**
+**Feito com ☕ e Claude Code**
 
 </div>
