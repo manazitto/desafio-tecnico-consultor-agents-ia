@@ -118,10 +118,14 @@ def _route_after_tools(state: AgentState) -> str:
 
 def build_agent_graph(llm, agents: dict):
     """Constroi e compila o StateGraph de agentes."""
+    seen_names = set()
     all_tools = []
     for tool_list in agents.values():
         if isinstance(tool_list, list):
-            all_tools.extend(tool_list)
+            for t in tool_list:
+                if t.name not in seen_names:
+                    seen_names.add(t.name)
+                    all_tools.append(t)
 
     llm_with_tools = llm.bind_tools(all_tools)
 
