@@ -6,7 +6,7 @@ def make_route_tool() -> Tool:
     """Cria tool de roteamento para outro agente."""
     return Tool(
         name="route_to_agent",
-        description="Redireciona o cliente para outro agente especializado. Use 'credit' para credito, 'exchange' para cambio, 'credit_interview' para entrevista de credito, 'triage' para voltar ao inicio.",
+        description="Redireciona o cliente para outro agente bancario. SOMENTE use para servicos bancarios: 'credit' (limite de credito), 'exchange' (cotacao de moedas), 'credit_interview' (recalculo de score), 'triage' (voltar ao inicio). NAO use para pedidos fora do escopo bancario — nesses casos, responda com texto de recusa sem chamar nenhuma tool.",
         parameters={
             "type": "object",
             "properties": {

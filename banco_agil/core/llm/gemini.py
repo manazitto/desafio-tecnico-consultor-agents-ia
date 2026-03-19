@@ -14,11 +14,23 @@ class GeminiProvider(LLMProvider):
         self._model = model
         self._llm = ChatGoogleGenerativeAI(model=model, google_api_key=api_key)
 
+    @staticmethod
+    def _extract_text(content) -> str:
+        """Normaliza content (str ou list de parts) para string."""
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            return "".join(
+                part if isinstance(part, str) else part.get("text", "")
+                for part in content
+            )
+        return str(content)
+
     def chat(self, messages: list[dict]) -> str:
         """Envia mensagens e retorna resposta de texto."""
         lc_messages = self._to_langchain_messages(messages)
         response = self._llm.invoke(lc_messages)
-        return response.content
+        return self._extract_text(response.content)
 
     def chat_with_tools(self, messages: list[dict], tools: list[dict]) -> dict:
         """Envia mensagens com tools e retorna resposta (texto ou tool call)."""
@@ -38,7 +50,7 @@ class GeminiProvider(LLMProvider):
 
         return {
             "type": "text",
-            "content": response.content,
+            "content": self._extract_text(response.content),
         }
 
     def build_tool_declarations(self, tools: list[dict]) -> list[dict]:

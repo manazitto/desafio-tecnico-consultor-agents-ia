@@ -109,7 +109,7 @@ def create_routing_tools() -> list:
 
     @tool
     def route_to_agent(target_agent: str, reason: str = "") -> dict:
-        """Redireciona para outro agente: credit, exchange, credit_interview, triage."""
+        """Redireciona para outro agente bancario. SOMENTE use para servicos bancarios (credit, exchange, credit_interview, triage). NAO use para pedidos fora do escopo — responda com texto de recusa."""
         return {"action": "route", "target_agent": target_agent, "reason": reason}
 
     return [route_to_agent]

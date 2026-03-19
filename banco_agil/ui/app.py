@@ -6,6 +6,15 @@ from banco_agil.config import GEMINI_API_KEY, LLM_MODEL
 from banco_agil.core.graph import AgentState, create_runnable
 
 
+def _to_str(content) -> str:
+    """Normaliza content (str ou list) para string."""
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        return "".join(p if isinstance(p, str) else p.get("text", "") for p in content)
+    return str(content)
+
+
 @cl.on_chat_start
 async def on_chat_start():
     """Inicializa a sessao do chat."""
@@ -48,15 +57,16 @@ async def on_message(message: cl.Message):
         ai_response = ""
         for m in reversed(result["messages"]):
             if isinstance(m, AIMessage) and m.content and not getattr(m, "tool_calls", None):
-                ai_response = m.content
+                ai_response = _to_str(m.content)
                 break
 
         # Atualizar client_data se autenticacao ocorreu
         for m in result["messages"]:
-            if hasattr(m, "content") and isinstance(m.content, str) and '"authenticated": true' in m.content.lower():
+            text = _to_str(m.content) if hasattr(m, "content") else ""
+            if '"authenticated": true' in text.lower():
                 import json
                 try:
-                    data = json.loads(m.content)
+                    data = json.loads(text)
                     if data.get("authenticated") and "cliente" in data:
                         cliente = data["cliente"]
                         result["client_data"] = {
