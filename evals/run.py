@@ -187,8 +187,8 @@ def main():
             save_report(report)
 
         if args.langsmith:
-            from evals.langsmith_integration import push_eval_to_langsmith
-            push_eval_to_langsmith(report)
+            from evals.langsmith_integration import run_langsmith_eval
+            run_langsmith_eval(suite_name, llm, agents)
 
 
 if __name__ == "__main__":

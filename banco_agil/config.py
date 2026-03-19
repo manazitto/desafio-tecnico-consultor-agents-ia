@@ -22,3 +22,10 @@ LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY", "")
 LANGSMITH_ENDPOINT = os.getenv("LANGSMITH_ENDPOINT", "https://api.smith.langchain.com")
 LANGSMITH_PROJECT = os.getenv("LANGSMITH_PROJECT", "case-banco-agil")
 LANGSMITH_TRACING = bool(LANGSMITH_API_KEY)
+
+# Exportar vars que o LangChain SDK le automaticamente para tracing
+if LANGSMITH_TRACING:
+    os.environ.setdefault("LANGCHAIN_TRACING_V2", "true")
+    os.environ.setdefault("LANGCHAIN_API_KEY", LANGSMITH_API_KEY)
+    os.environ.setdefault("LANGCHAIN_PROJECT", LANGSMITH_PROJECT)
+    os.environ.setdefault("LANGCHAIN_ENDPOINT", LANGSMITH_ENDPOINT)
